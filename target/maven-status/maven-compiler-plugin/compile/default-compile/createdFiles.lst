@@ -1,0 +1,13 @@
+com\infomedia\rest\ApiRest\controller\AuthController.class
+com\infomedia\rest\ApiRest\dto\LoginRequest.class
+com\infomedia\rest\ApiRest\env\DbConfig.class
+com\infomedia\rest\ApiRest\ApiRestApplication.class
+com\infomedia\rest\ApiRest\dto\LoginResponse.class
+com\infomedia\rest\ApiRest\model\User.class
+com\infomedia\rest\ApiRest\dto\SelectRoleRequest.class
+com\infomedia\rest\ApiRest\config\SecurityConfig.class
+com\infomedia\rest\ApiRest\config\PasswordConfig.class
+com\infomedia\rest\ApiRest\model\Role.class
+com\infomedia\rest\ApiRest\repository\UserRepository.class
+com\infomedia\rest\ApiRest\repository\RoleRepository.class
+com\infomedia\rest\ApiRest\service\AuthService.class

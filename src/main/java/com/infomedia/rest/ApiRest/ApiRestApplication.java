@@ -6,6 +6,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+
 @ComponentScan(basePackages = "com.infomedia.rest.ApiRest.config")
 public class ApiRestApplication extends SpringBootServletInitializer {
 

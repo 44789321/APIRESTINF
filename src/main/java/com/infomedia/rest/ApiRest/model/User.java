@@ -1,5 +1,6 @@
 package com.infomedia.rest.ApiRest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,6 +11,7 @@ public class User {
     @Column(name = "ISR_USUARIO")
     private String username;
 
+    @JsonIgnore
     @Column(name = "ISR_CONTRA")
     private String password;
 

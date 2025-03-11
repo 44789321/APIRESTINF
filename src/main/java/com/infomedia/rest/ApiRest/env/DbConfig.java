@@ -10,7 +10,8 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 
 @Configuration
-@PropertySource("file:/C:/Users/Consultor/Desktop/Infomedia/db2.config")
+//@PropertySource("file:/C:/Users/Consultor/Desktop/Infomedia/db2.config")
+@PropertySource("classpath:config/db2.config")
 public class DbConfig {
 
     @Value("${db2.url}")

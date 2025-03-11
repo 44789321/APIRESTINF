@@ -6,14 +6,19 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "INF_USUARIOS")
 public class User {
-
+//---------------------------------Information Requested------------------------------------------
     @Id
+
+    @JsonIgnore
     @Column(name = "ISR_USUARIO")
     private String username;
 
     @JsonIgnore
     @Column(name = "ISR_CONTRA")
     private String password;
+
+    @Column(name="ISR_ID")
+    private Long userId;
 
     @Column(name = "ISR_INR_ID")
     private Long roleId;
@@ -41,5 +46,13 @@ public class User {
 
     public void setRoleId(Long roleId) {
         this.roleId = roleId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

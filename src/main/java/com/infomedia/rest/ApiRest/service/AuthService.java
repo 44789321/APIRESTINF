@@ -9,6 +9,8 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -34,7 +36,9 @@ public class AuthService {
 
             // Verificar si la contraseña es correcta
             if (passwordEncryptor.checkPassword(loginRequest.getPassword(), user.getPassword())) {
-                return new LoginResponse("Login exitoso", true, user.getUsername());
+                Map<String, Object> data = new HashMap<>();
+                data.put("username", user.getUsername());
+                return new LoginResponse("Login exitoso", true, data);
             } else {
                 return new LoginResponse("Usuario o contraseña incorrecta", false, null);
             }

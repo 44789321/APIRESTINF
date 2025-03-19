@@ -3,13 +3,13 @@ package com.infomedia.rest.ApiRest.dto;
 public class LoginResponse {
     private String message;
     private boolean success;
-    private String username;
+    private Object data;  // Cambiar para permitir cualquier tipo de dato en la respuesta
 
     // Constructor
-    public LoginResponse(String message, boolean success, String username) {
+    public LoginResponse(String message, boolean success, Object data) {
         this.message = message;
         this.success = success;
-        this.username = username;
+        this.data = data;
     }
 
     // Getters y setters
@@ -29,11 +29,11 @@ public class LoginResponse {
         this.success = success;
     }
 
-    public String getUsername() {
-        return username;
+    public Object getData() {
+        return data;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setData(Object data) {
+        this.data = data;
     }
 }

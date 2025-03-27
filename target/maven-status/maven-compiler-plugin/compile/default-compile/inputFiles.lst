@@ -6,8 +6,16 @@ C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\Ap
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\LoginResponse.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\SelectRoleRequest.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\env\DbConfig.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\Clientes.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\People.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\ProjectRole.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\Proyecto.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\Role.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\User.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\ClienteRepository.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\PeopleRepository.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\ProjectRoleRepository.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\ProyectoRepository.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\RoleRepository.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\UserRepository.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\service\AuthService.java

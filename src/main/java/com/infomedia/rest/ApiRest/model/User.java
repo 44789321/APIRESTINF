@@ -14,6 +14,10 @@ public class User {
     private String username;
 
     @JsonIgnore
+    @Column(name = "ISR_ICN_ID")
+    private Long filterId;
+
+    @JsonIgnore
     @Column(name = "ISR_CONTRA")
     private String password;
 
@@ -23,13 +27,24 @@ public class User {
     @Column(name = "ISR_INR_ID")
     private Long roleId;
 
-    // Getters y setters
+    @Transient
+    private Long userFilterId;
+
+    //Getters and Setters
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Long getFilterId() {
+        return filterId;
+    }
+
+    public void setFilterId(Long filterId) {
+        this.filterId = filterId;
     }
 
     public String getPassword() {
@@ -40,6 +55,14 @@ public class User {
         this.password = password;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public Long getRoleId() {
         return roleId;
     }
@@ -48,11 +71,11 @@ public class User {
         this.roleId = roleId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getUserFilterId() {
+        return userFilterId;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUserFilterId(Long userFilterId) {
+        this.userFilterId = userFilterId;
     }
 }

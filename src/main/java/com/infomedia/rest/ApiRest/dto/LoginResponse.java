@@ -3,7 +3,7 @@ package com.infomedia.rest.ApiRest.dto;
 public class LoginResponse {
     private String message;
     private boolean success;
-    private Object data;  // Cambiar para permitir cualquier tipo de dato en la respuesta
+    private Object data;
 
     // Constructor
     public LoginResponse(String message, boolean success, Object data) {

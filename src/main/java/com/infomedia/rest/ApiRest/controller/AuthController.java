@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -51,7 +52,11 @@ public class AuthController {
     public ResponseEntity<?> getAvailableRoles(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body("Sin sesión activa");
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "Sin sesión activa",
+                    "success", false,
+                    "data", null
+            ));
         }
         String username = (String) session.getAttribute("user");
         Optional<User> userOptional = userRepository.findByUsername(username);
@@ -60,28 +65,44 @@ public class AuthController {
             Long filterId = user.getFilterId();
             List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
             if (projectRoles.isEmpty()) {
-                return ResponseEntity.status(404).body("No roles disponibles para este usuario");
+                return ResponseEntity.status(404).body(Map.of(
+                        "message", "No roles disponibles para este usuario",
+                        "success", false,
+                        "data", null
+                ));
             }
             Set<Map<String, Object>> uniqueRoles = new HashSet<>();
             for (ProjectRole projectRole : projectRoles) {
                 Map<String, Object> roleInfo = new HashMap<>();
                 Long roleId = projectRole.getRoleName();
                 String roleName = authService.getRoleName(roleId);
-                roleInfo.put("roleId", roleId);  // Agregar el ID del rol
-                roleInfo.put("roleName", roleName);  // Agregar el nombre del rol
+                roleInfo.put("roleId", roleId);
+                roleInfo.put("roleName", roleName);
                 uniqueRoles.add(roleInfo);
             }
-            return ResponseEntity.ok(new ArrayList<>(uniqueRoles));  // Devolver lista con ID y nombre del rol
+            return ResponseEntity.ok(Map.of(
+                    "message", "Roles obtenidos correctamente",
+                    "success", true,
+                    "data", new ArrayList<>(uniqueRoles)
+            ));
         }
 
-        return ResponseEntity.status(404).body("Usuario no encontrado");
+        return ResponseEntity.status(404).body(Map.of(
+                "message", "Usuario no encontrado",
+                "success", false,
+                "data", null
+        ));
     }
 
     @GetMapping("/nombre")
     public ResponseEntity<?> getNombre(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "Sin sesión activa"));
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "Sin sesión activa",
+                    "success", false,
+                    "data", null
+            ));
         }
 
         String username = (String) session.getAttribute("user");
@@ -92,29 +113,53 @@ public class AuthController {
 
             Optional<People> peopleOptional = peopleRepository.findByPeopleId(filterId);
             if (peopleOptional.isPresent()) {
-                return ResponseEntity.ok(Map.of("nombre", peopleOptional.get().getUserName()));
+                return ResponseEntity.ok(Map.of(
+                        "message", "Nombre obtenido correctamente",
+                        "success", true,
+                        "data", Map.of("nombre", peopleOptional.get().getUserName())
+                ));
             }
-            return ResponseEntity.status(404).body(Map.of("error", "No se encontró coincidencia en INF_PERSONAS"));
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "No se encontró coincidencia en INF_PERSONAS",
+                    "success", false,
+                    "data", null
+            ));
         }
-        return ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado"));
+        return ResponseEntity.status(404).body(Map.of(
+                "message", "Usuario no encontrado",
+                "success", false,
+                "data", null
+        ));
     }
 
     @GetMapping("/proyecto")
     public ResponseEntity<?> getProyectos(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body("Sin sesión activa");
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "Sin sesión activa",
+                    "success", false,
+                    "data", null
+            ));
         }
         String username = (String) session.getAttribute("user");
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(404).body("Usuario no encontrado");
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "Usuario no encontrado",
+                    "success", false,
+                    "data", null
+            ));
         }
         User user = userOptional.get();
         Long filterId = user.getFilterId();
         List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
         if (projectRoles.isEmpty()) {
-            return ResponseEntity.status(404).body("No hay proyectos asociados a este usuario");
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "No hay proyectos asociados a este usuario",
+                    "success", false,
+                    "data", null
+            ));
         }
         List<String> projectNames = projectRoles.stream()
                 .map(ProjectRole::getProjectName)
@@ -122,14 +167,23 @@ public class AuthController {
                 .toList();
         List<Proyecto> proyectos = proyectoRepository.findByProjectIdIn(projectNames);
         if (proyectos.isEmpty()) {
-            return ResponseEntity.status(404).body("No se encontraron proyectos con esos IDs");
+            return ResponseEntity.status(404).body(Map.of(
+                    "message", "No se encontraron proyectos con esos IDs",
+                    "success", false,
+                    "data", null
+            ));
         }
         List<String> projectNamesResult = proyectos.stream()
                 .map(Proyecto::getProjectName)
                 .distinct()
                 .toList();
-        return ResponseEntity.ok(projectNamesResult);
+        return ResponseEntity.ok(Map.of(
+                "message", "Proyectos obtenidos correctamente",
+                "success", true,
+                "data", projectNamesResult
+        ));
     }
+
 
     /*-----------------------------Métodos POST--------------------------------------*/
 
@@ -150,49 +204,51 @@ public class AuthController {
     }
 
     @PostMapping("/select-role")
-    public ResponseEntity<?> selectRole(@RequestBody Map<String, Object> payload, HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
+    public ResponseEntity<LoginResponse> selectRole(@RequestBody SelectRoleRequest request, HttpServletRequest httpServletRequest) {
+        HttpSession session = httpServletRequest.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body("Sin sesión activa");
+            return ResponseEntity.status(404).body(new LoginResponse("Sin sesión activa", false, null));
         }
-        if (!payload.containsKey("roleId") || payload.get("roleId") == null) {
-            return ResponseEntity.status(400).body("El parámetro 'roleId' es obligatorio");
-        }
-        Long selectedRoleId = null;
-        try {
-            selectedRoleId = Long.parseLong(payload.get("roleId").toString());
-        } catch (NumberFormatException e) {
-            return ResponseEntity.status(400).body("El 'roleId' debe ser un número válido");
-        }
+
         String username = (String) session.getAttribute("user");
         Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long filterId = user.getFilterId();
-            List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
-            Set<Long> availableRoleIds = new HashSet<>();
-            for (ProjectRole projectRole : projectRoles) {
-                availableRoleIds.add(projectRole.getRoleName());
-            }
-            if (!availableRoleIds.contains(selectedRoleId)) {
-                return ResponseEntity.status(400).body("Rol seleccionado no disponible para este usuario");
-            }
-            session.setAttribute("selectedRole", selectedRoleId.toString());
-            return ResponseEntity.ok("Rol seleccionado correctamente");
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(404).body(new LoginResponse("Usuario no encontrado", false, null));
         }
-        return ResponseEntity.status(404).body("Usuario no encontrado");
+
+        User user = userOptional.get();
+        Long filterId = user.getFilterId();
+        List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
+
+        Set<Long> availableRoleIds = projectRoles.stream()
+                .map(ProjectRole::getRoleName)  // Asegúrate de que `getRoleName()` retorna un `Long`, no un `String`.
+                .collect(Collectors.toSet());
+
+        Long selectedRoleId = request.getRoleId();
+        if (!availableRoleIds.contains(selectedRoleId)) {
+            return ResponseEntity.status(400).body(new LoginResponse("Rol seleccionado no disponible para este usuario", false, null));
+        }
+
+        session.setAttribute("selectedRole", selectedRoleId.toString());
+        return ResponseEntity.ok(new LoginResponse("Rol seleccionado correctamente", true, null));
     }
 
 
-
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
+    public ResponseEntity<LoginResponse> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
+
+        if (session == null || session.getAttribute("user") == null) {
+            return ResponseEntity.status(400).body(
+                    new LoginResponse("No hay sesión activa para cerrar", false, null)
+            );
         }
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Logout successful");
+
+        session.invalidate();
+
+        return ResponseEntity.ok(
+                new LoginResponse("Sesión cerrada correctamente", true, null)
+        );
     }
 
 

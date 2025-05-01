@@ -6,7 +6,6 @@ import com.infomedia.rest.ApiRest.repository.*;
 import com.infomedia.rest.ApiRest.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
-//@RequiredArgsConstructor
 public class AuthController {
 
 
@@ -237,7 +235,7 @@ public class AuthController {
         List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
 
         Set<Long> availableRoleIds = projectRoles.stream()
-                .map(ProjectRole::getRoleName)  // Asegúrate de que `getRoleName()` retorna un `Long`, no un `String`.
+                .map(ProjectRole::getRoleName)
                 .collect(Collectors.toSet());
 
         Long selectedRoleId = request.getRoleId();

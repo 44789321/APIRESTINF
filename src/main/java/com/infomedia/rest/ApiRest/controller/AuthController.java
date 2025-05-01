@@ -7,8 +7,8 @@ import com.infomedia.rest.ApiRest.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class AuthController {
 
 
@@ -29,6 +29,22 @@ public class AuthController {
     private final ProyectoRepository proyectoRepository;
     private final ClienteRepository clienteRepository;
 
+    @Autowired
+    public AuthController(UserRepository userRepository,
+                          RoleRepository roleRepository,
+                          AuthService authService,
+                          ProjectRoleRepository projectRoleRepository,
+                          PeopleRepository peopleRepository,
+                          ProyectoRepository proyectoRepository,
+                          ClienteRepository clienteRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.authService = authService;
+        this.projectRoleRepository = projectRoleRepository;
+        this.peopleRepository = peopleRepository;
+        this.proyectoRepository = proyectoRepository;
+        this.clienteRepository = clienteRepository;
+    }
     /*------------------------Métodos GET en el sistema----------------------------------*/
 
     @GetMapping("/user-filter")

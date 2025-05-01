@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController {
 
-
     /*--------------------------Inyección de Repositorios--------------------*/
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -25,7 +24,6 @@ public class AuthController {
     private final ProjectRoleRepository projectRoleRepository;
     private final PeopleRepository peopleRepository;
     private final ProyectoRepository proyectoRepository;
-    private final ClienteRepository clienteRepository;
 
     @Autowired
     public AuthController(UserRepository userRepository,
@@ -33,15 +31,14 @@ public class AuthController {
                           AuthService authService,
                           ProjectRoleRepository projectRoleRepository,
                           PeopleRepository peopleRepository,
-                          ProyectoRepository proyectoRepository,
-                          ClienteRepository clienteRepository) {
+                          ProyectoRepository proyectoRepository
+    ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.authService = authService;
         this.projectRoleRepository = projectRoleRepository;
         this.peopleRepository = peopleRepository;
         this.proyectoRepository = proyectoRepository;
-        this.clienteRepository = clienteRepository;
     }
     /*------------------------Métodos GET en el sistema----------------------------------*/
 

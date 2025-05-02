@@ -1,9 +1,9 @@
 com\infomedia\rest\ApiRest\dto\LoginRequest.class
 com\infomedia\rest\ApiRest\env\DbConfig.class
 com\infomedia\rest\ApiRest\ApiRestApplication.class
+com\infomedia\rest\ApiRest\config\SecurityConfig$1.class
 com\infomedia\rest\ApiRest\repository\ProyectoRepository.class
 com\infomedia\rest\ApiRest\repository\PeopleRepository.class
-com\infomedia\rest\ApiRest\ApiRestApplication$1.class
 com\infomedia\rest\ApiRest\model\ProjectRole.class
 com\infomedia\rest\ApiRest\model\Clientes.class
 com\infomedia\rest\ApiRest\service\AuthService.class

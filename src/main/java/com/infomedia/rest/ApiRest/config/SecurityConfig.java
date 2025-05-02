@@ -94,6 +94,7 @@ public class SecurityConfig {
                 // Configure authorization
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/sic/auth/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 // Configure session management

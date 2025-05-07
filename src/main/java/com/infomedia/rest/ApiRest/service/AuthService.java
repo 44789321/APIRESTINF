@@ -1,80 +1,55 @@
 package com.infomedia.rest.ApiRest.service;
 
-import com.infomedia.rest.ApiRest.dto.*;
 import com.infomedia.rest.ApiRest.model.Role;
 import com.infomedia.rest.ApiRest.model.User;
-import com.infomedia.rest.ApiRest.repository.ProjectRoleRepository;
 import com.infomedia.rest.ApiRest.repository.RoleRepository;
 import com.infomedia.rest.ApiRest.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
+    private final UserRepository userRepository;
+    private final StrongPasswordEncryptor passwordEncryptor;
+
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private StrongPasswordEncryptor passwordEncryptor;
-    @Autowired
-    private ProjectRoleRepository projectRoleRepository;
+    public AuthService(UserRepository userRepository, StrongPasswordEncryptor passwordEncryptor) {
+        this.userRepository = userRepository;
+        this.passwordEncryptor = passwordEncryptor;
+    }
+
+    public User authenticate(String username, String password) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (passwordEncryptor.checkPassword(password, user.getPassword())) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public User registerUser(User user) {
+        String encryptedPassword = passwordEncryptor.encryptPassword(user.getPassword());
+        user.setPassword(encryptedPassword);
+        return userRepository.save(user);
+    }
+
     @Autowired
     private RoleRepository roleRepository;
 
-
-    private Map<Long, String> roleCache = new HashMap<>();
-
-    @PostConstruct
-    public void loadRolesIntoCache() {
-        List<Role> roles = roleRepository.findAll();
-        for (Role role : roles) {
-            roleCache.put(role.getId(), role.getName());
-        }
-    }
-
     public String getRoleName(Long roleId) {
-        return roleCache.getOrDefault(roleId, "Desconocido");
-    }
+        Optional<Role> roleOptional = roleRepository.findById(roleId);
 
-    public LoginResponse login(LoginRequest loginRequest) {
-        Optional<User> userOptional = userRepository.findByUsername(loginRequest.getUsername());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (passwordEncryptor.checkPassword(loginRequest.getPassword(), user.getPassword())) {
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        user.getUserId(),
-                        null,
-                        Collections.emptyList()
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                Map<String, Object> data = new HashMap<>();
-                data.put("username", user.getUsername());
-                data.put("userId", user.getUserId());
-
-                return new LoginResponse("Successful", true, data);
-            } else {
-                return new LoginResponse("Usuario o contraseña invalidos", false, null);
-            }
-        } else {
-            return new LoginResponse("Usuario o contraseña invalidos", false, null);
+        if (roleOptional.isPresent()) {
+            return roleOptional.get().getName();
         }
-    }
 
-    @Value("${auth.service.url}")
-    private String userFilterEndpoint;
-
-    public Long getUserFilter() {
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(userFilterEndpoint, Long.class);
+        return "Desconocido";
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Configuration
 @EnableWebSecurity
 public class PasswordConfig {
-
     @Bean
     public StrongPasswordEncryptor passwordEncryptor() {
         return new StrongPasswordEncryptor();

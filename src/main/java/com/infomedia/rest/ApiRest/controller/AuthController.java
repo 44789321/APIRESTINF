@@ -1,267 +1,126 @@
 package com.infomedia.rest.ApiRest.controller;
 
-import com.infomedia.rest.ApiRest.dto.*;
-import com.infomedia.rest.ApiRest.model.*;
+
+import com.infomedia.rest.ApiRest.dto.AuthResponseDTO;
+import com.infomedia.rest.ApiRest.dto.LoginDTO;
+import com.infomedia.rest.ApiRest.model.People;
+import com.infomedia.rest.ApiRest.model.ProjectRole;
+import com.infomedia.rest.ApiRest.model.Role;
+import com.infomedia.rest.ApiRest.model.User;
 import com.infomedia.rest.ApiRest.repository.*;
 import com.infomedia.rest.ApiRest.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.infomedia.rest.ApiRest.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     /*--------------------------Inyección de Repositorios--------------------*/
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final AuthService authService;
-    private final ProjectRoleRepository projectRoleRepository;
-    private final PeopleRepository peopleRepository;
-    private final ProyectoRepository proyectoRepository;
-
+    private final JwtService jwtService;
     @Autowired
-    public AuthController(UserRepository userRepository,
-                          RoleRepository roleRepository,
-                          AuthService authService,
-                          ProjectRoleRepository projectRoleRepository,
-                          PeopleRepository peopleRepository,
-                          ProyectoRepository proyectoRepository
-    ) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
+    public AuthController(AuthService authService, JwtService jwtService) {
         this.authService = authService;
-        this.projectRoleRepository = projectRoleRepository;
-        this.peopleRepository = peopleRepository;
-        this.proyectoRepository = proyectoRepository;
+        this.jwtService = jwtService;
     }
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ProjectRoleRepository projectRoleRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private PeopleRepository peopleRepository;
+
     /*------------------------Métodos GET en el sistema----------------------------------*/
-
-    @GetMapping("/user-filter")
-    public ResponseEntity<?> getUserFilter(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body("Sin sesion activa");
-        }
-        String username = (String) session.getAttribute("user");
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long filterId = user.getFilterId();
-
-            return ResponseEntity.ok(filterId);
-        }
-        return ResponseEntity.status(404).body("User not found");
-    }
-
     @GetMapping("/roles")
-    public ResponseEntity<?> getAvailableRoles(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "Sin sesión activa",
-                    "success", false,
-                    "data", null
-            ));
-        }
-        String username = (String) session.getAttribute("user");
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
+    public ResponseEntity<?> getRolesForAuthenticatedUser(@RequestHeader("Authorization") String token) {
+        try {
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            String username = jwtService.extractUsername(token);
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Usuario no encontrado");
+            }
+            User user = userOpt.get();
             Long filterId = user.getFilterId();
-            List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
-            if (projectRoles.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of(
-                        "message", "No roles disponibles para este usuario",
-                        "success", false,
-                        "data", null
-                ));
+            List<ProjectRole> userProjectRoles = projectRoleRepository.findByUserFilter(filterId);
+            if (userProjectRoles.isEmpty()) {
+                return ResponseEntity.ok(Collections.emptyList());
             }
-            Set<Map<String, Object>> uniqueRoles = new HashSet<>();
-            for (ProjectRole projectRole : projectRoles) {
-                Map<String, Object> roleInfo = new HashMap<>();
-                Long roleId = projectRole.getRoleName();
-                String roleName = authService.getRoleName(roleId);
-                roleInfo.put("roleId", roleId);
-                roleInfo.put("roleName", roleName);
-                uniqueRoles.add(roleInfo);
+            // Obtener los IDs de roles únicos
+            Set<Long> roleIds = new HashSet<>();
+            for (ProjectRole pr : userProjectRoles) {
+                roleIds.add(pr.getRoleName()); // Obtener el ID del rol
             }
-            return ResponseEntity.ok(Map.of(
-                    "message", "Roles obtenidos correctamente",
-                    "success", true,
-                    "data", new ArrayList<>(uniqueRoles)
-            ));
+            // Crear una lista de objetos con roleId y roleName
+            List<Map<String, Object>> rolesData = new ArrayList<>();
+            for (Long id : roleIds) {
+                roleRepository.findById(id).ifPresent(role -> {
+                    Map<String, Object> roleData = new HashMap<>();
+                    roleData.put("roleId", role.getId());      // Asignar roleId
+                    roleData.put("roleName", role.getName());  // Asignar roleName
+                    rolesData.add(roleData);  // Agregar a la lista
+                });
+            }
+            // Retornar la respuesta en formato JSON
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", rolesData);   // Datos de roles
+            response.put("success", true);     // Indicar éxito
+            response.put("message", "Roles obtenidos correctamente"); // Mensaje de éxito
+            return ResponseEntity.ok(response);  // Retornar la respuesta
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al obtener los roles: " + e.getMessage());
         }
-
-        return ResponseEntity.status(404).body(Map.of(
-                "message", "Usuario no encontrado",
-                "success", false,
-                "data", null
-        ));
     }
 
-    @GetMapping("/nombre")
-    public ResponseEntity<?> getNombre(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "Sin sesión activa",
-                    "success", false,
-                    "data", null
-            ));
-        }
-
-        String username = (String) session.getAttribute("user");
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long filterId = user.getFilterId();
-
-            Optional<People> peopleOptional = peopleRepository.findByPeopleId(filterId);
-            if (peopleOptional.isPresent()) {
-                return ResponseEntity.ok(Map.of(
-                        "message", "Nombre obtenido correctamente",
-                        "success", true,
-                        "data", Map.of("nombre", peopleOptional.get().getUserName())
-                ));
+    @GetMapping("/validate")
+    public ResponseEntity<AuthResponseDTO> validateToken(@RequestHeader("Authorization") String token) {
+        try {
+            // Eliminar el prefijo "Bearer " si está presente
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
             }
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "No se encontró coincidencia en INF_PERSONAS",
-                    "success", false,
-                    "data", null
-            ));
+            String username = jwtService.extractUsername(token);
+            boolean isValid = jwtService.validateToken(token, username);
+            if (isValid) {
+                return ResponseEntity.ok(new AuthResponseDTO("Token válido", true));
+            } else {
+                return ResponseEntity.status(401).body(new AuthResponseDTO("Token inválido o expirado", false));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(new AuthResponseDTO("Token inválido", false));
         }
-        return ResponseEntity.status(404).body(Map.of(
-                "message", "Usuario no encontrado",
-                "success", false,
-                "data", null
-        ));
     }
-
-    @GetMapping("/proyecto")
-    public ResponseEntity<?> getProyectos(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "Sin sesión activa",
-                    "success", false,
-                    "data", null
-            ));
-        }
-        String username = (String) session.getAttribute("user");
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "Usuario no encontrado",
-                    "success", false,
-                    "data", null
-            ));
-        }
-        User user = userOptional.get();
-        Long filterId = user.getFilterId();
-        List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
-        if (projectRoles.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "No hay proyectos asociados a este usuario",
-                    "success", false,
-                    "data", null
-            ));
-        }
-        List<String> projectNames = projectRoles.stream()
-                .map(ProjectRole::getProjectName)
-                .distinct()
-                .toList();
-        List<Proyecto> proyectos = proyectoRepository.findByProjectIdIn(projectNames);
-        if (proyectos.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "No se encontraron proyectos con esos IDs",
-                    "success", false,
-                    "data", null
-            ));
-        }
-        List<String> projectNamesResult = proyectos.stream()
-                .map(Proyecto::getProjectName)
-                .distinct()
-                .toList();
-        return ResponseEntity.ok(Map.of(
-                "message", "Proyectos obtenidos correctamente",
-                "success", true,
-                "data", projectNamesResult
-        ));
-    }
-
 
     /*-----------------------------Métodos POST--------------------------------------*/
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session != null && session.getAttribute("user") != null) {
-            return ResponseEntity.status(400).body(new LoginResponse("Ya existe una sesión activa", false, null));
-        }
-        LoginResponse response = authService.login(request);
-        if (response.isSuccess()) {
-            session = httpServletRequest.getSession(true);
-            session.setAttribute("user", request.getUsername());
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginDTO loginDTO) {
+        User authenticatedUser = authService.authenticate(loginDTO.getUsername(), loginDTO.getPassword());
+        if (authenticatedUser != null) {
+            String token = jwtService.generateToken(authenticatedUser);
+            AuthResponseDTO response = new AuthResponseDTO(
+                    "Login exitoso",
+                    true,
+                    authenticatedUser.getUserId(),
+                    authenticatedUser.getRoleId(),
+                    token
+            );
             return ResponseEntity.ok(response);
         } else {
+            AuthResponseDTO response = new AuthResponseDTO("Credenciales inválidas", false);
             return ResponseEntity.status(401).body(response);
         }
     }
-
-    @PostMapping("/select-role")
-    public ResponseEntity<LoginResponse> selectRole(@RequestBody SelectRoleRequest request, HttpServletRequest httpServletRequest) {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(404).body(new LoginResponse("Sin sesión activa", false, null));
-        }
-
-        String username = (String) session.getAttribute("user");
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.status(404).body(new LoginResponse("Usuario no encontrado", false, null));
-        }
-
-        User user = userOptional.get();
-        Long filterId = user.getFilterId();
-        List<ProjectRole> projectRoles = projectRoleRepository.findByUserFilter(filterId);
-
-        Set<Long> availableRoleIds = projectRoles.stream()
-                .map(ProjectRole::getRoleName)
-                .collect(Collectors.toSet());
-
-        Long selectedRoleId = request.getRoleId();
-        if (!availableRoleIds.contains(selectedRoleId)) {
-            return ResponseEntity.status(400).body(new LoginResponse("Rol seleccionado no disponible para este usuario", false, null));
-        }
-
-        session.setAttribute("selectedRole", selectedRoleId.toString());
-        return ResponseEntity.ok(new LoginResponse("Rol seleccionado correctamente", true, null));
-    }
-
-
-    @PostMapping("/logout")
-    public ResponseEntity<LoginResponse> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(400).body(
-                    new LoginResponse("No hay sesión activa para cerrar", false, null)
-            );
-        }
-
-        session.invalidate();
-
-        return ResponseEntity.ok(
-                new LoginResponse("Sesión cerrada correctamente", true, null)
-        );
-    }
-
 
     /*---------------------Gets de prueba para funcionamiento-------------------------------*/
 
@@ -272,7 +131,7 @@ public class AuthController {
     }
 
     @GetMapping("/roles-disponibles")
-    public ResponseEntity<List<Role>> getAllRoles() {
+    public ResponseEntity<List<Role>>getAllRoles() {
         List<Role> roles = roleRepository.findAll();
         return ResponseEntity.ok(roles);
     }
@@ -281,30 +140,5 @@ public class AuthController {
     public ResponseEntity<List<People>>getAllPeople(){
         List<People> people = peopleRepository.findAll();
         return ResponseEntity.ok(people);
-    }
-
-    @GetMapping("/user-active")
-    public ResponseEntity<User> getUserActive(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.notFound().build();
-        }
-        String username = (String) session.getAttribute("user");
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            return ResponseEntity.ok(userOptional.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/get-selected-role")
-    public ResponseEntity<?> getSelectedRole(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("selectedRole") == null) {
-            return ResponseEntity.status(404).body("No se ha seleccionado un rol");
-        }
-        String selectedRole = (String) session.getAttribute("selectedRole");
-        return ResponseEntity.ok("Rol seleccionado: " + selectedRole);
     }
 }

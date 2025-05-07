@@ -1,11 +1,12 @@
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\ApiRestApplication.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\config\DbConfig.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\config\PasswordConfig.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\config\SecurityConfig.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\controller\AuthController.java
-C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\LoginRequest.java
-C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\LoginResponse.java
-C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\SelectRoleRequest.java
-C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\env\DbConfig.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\AuthResponseDTO.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\ErrorResponse.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\LoginDTO.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\dto\RoleSelectionRequest.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\Clientes.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\People.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\model\ProjectRole.java
@@ -19,3 +20,4 @@ C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\Ap
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\RoleRepository.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\repository\UserRepository.java
 C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\service\AuthService.java
+C:\Users\Consultor\Desktop\Infomedia\ApiRest\src\main\java\com\infomedia\rest\ApiRest\service\JwtService.java
